@@ -567,13 +567,14 @@ function WalletConnect() {
 
   const sendGetInfo = async (signClient: Client, session: SessionTypes.Struct) => {
     const result = await getInfo(signClient, session);
+    console.log("sendGetInfo result", result);
 
     setNodeUrl(result?.nodeUrl || "");
     setConnectedAddress(result?.address || "");
     setChainId(result?.chainId);
   };
 
-  const sendDummyTransaction = (signClient: Client, session: SessionTypes.Struct) => {
+  const sendDummyTransaction = async (signClient: Client, session: SessionTypes.Struct) => {
     try {
       //
       // This is the same address as the connected one
@@ -591,7 +592,20 @@ function WalletConnect() {
         accountBlock: dummyAccountBlock.toJson(),
       };
 
-      sendTransaction(signClient!, session!, dummyTransaction);
+      const accountBlock = await sendTransaction(signClient!, session!, dummyTransaction);
+      console.log("Account block", accountBlock);
+      console.log("Account block", accountBlock?.toJson());
+
+      toast(`Sent! AccountBlock: ${JSON.stringify(accountBlock?.toJson())}`, {
+        position: "bottom-center",
+        autoClose: 15000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+        type: "success",
+        theme: "dark",
+      });
     } catch (err: any) {
       console.error(err);
       const readableError = err?.message || JSON.stringify(err);
@@ -608,7 +622,7 @@ function WalletConnect() {
     }
   };
 
-  const signDummyTransaction = (signClient: Client, session: SessionTypes.Struct) => {
+  const signDummyTransaction = async (signClient: Client, session: SessionTypes.Struct) => {
     try {
       //
       // This is the same address as the connected one
@@ -626,10 +640,10 @@ function WalletConnect() {
         accountBlock: dummyAccountBlock.toJson(),
       };
 
-      const signature = signTransaction(signClient, session, dummyTransaction);
+      const signature = await signTransaction(signClient, session, dummyTransaction);
       console.log("signature", signature);
 
-      toast(`${signature}`, {
+      toast(`Signed! Signature: ${signature}`, {
         position: "bottom-center",
         autoClose: 5000,
         hideProgressBar: false,
