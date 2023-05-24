@@ -183,7 +183,7 @@ function WalletConnect() {
       if (uri) {
         try {
           await web3Modal.openModal({uri});
-          openInNewTab("syrius://" + uri.replace("?", "\\?"));
+          openInNewTab("syrius://" + uri);
           //
           // await approval() opens the confirmation dialog on the SyriusWallet desktop app
           //
@@ -296,10 +296,6 @@ function WalletConnect() {
         chainId: "zenon:3",
         request: {
           method: "znn_sign",
-          // params: {
-          //   fromAddress: params.fromAddress,
-          //   accountBlock: params.accountBlock,
-          // },
           params: JSON.stringify(params.accountBlock),
         },
       });
@@ -369,17 +365,32 @@ function WalletConnect() {
     reasonMessage?: string,
     reasonData?: string
   ) => {
-    console.log("Disconnecting, ", signClient, session);
-    if (session.topic === currentSession?.topic) {
-      setCurrentSession(undefined);
+    try {
+      console.log("Disconnecting, ", signClient, session);
+      if (session.topic === currentSession?.topic) {
+        setCurrentSession(undefined);
+      }
+      await signClient.session.delete(session.topic, {
+        code: 1,
+        message: reasonMessage || "Default Message",
+        data: reasonData || "Default Data",
+      });
+      refreshSessions(signClient);
+      return true;
+    } catch (err: any) {
+      console.error(err);
+      const readableError = err?.message || JSON.stringify(err);
+      toast(`Error: ${readableError}`, {
+        position: "bottom-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+        type: "error",
+        theme: "dark",
+      });
     }
-    await signClient.session.delete(session.topic, {
-      code: 1,
-      message: reasonMessage || "Default Message",
-      data: reasonData || "Default Data",
-    });
-    refreshSessions(signClient);
-    return true;
   };
 
   const disconnectPairing = async (
@@ -388,45 +399,75 @@ function WalletConnect() {
     reasonMessage?: string,
     reasonData?: string
   ) => {
-    console.log("Disconnecting, ", signClient, pairing);
-    // Not sure which of these work.
-    // ToDo: Test them both and see which works and implement in disconnectAllPairings
-    //
-    if (pairing.topic === currentPairing?.topic) {
-      setCurrentPairing(undefined);
+    try {
+      console.log("Disconnecting, ", signClient, pairing);
+      // Not sure which of these work.
+      // ToDo: Test them both and see which works and implement in disconnectAllPairings
+      //
+      if (pairing.topic === currentPairing?.topic) {
+        setCurrentPairing(undefined);
+      }
+      await signClient.core.pairing.disconnect({topic: pairing.topic});
+      // await signClient.disconnect({
+      //   topic: pairing.topic,
+      //   reason: {
+      //     code: 1,
+      //     message: reasonMessage || "Default Message",
+      //     data: reasonData || "Default Data",
+      //   },
+      // });
+      console.log("localStorage", localStorage);
+      refreshPairings(signClient);
+      return true;
+    } catch (err: any) {
+      console.error(err);
+      const readableError = err?.message || JSON.stringify(err);
+      toast(`Error: ${readableError}`, {
+        position: "bottom-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+        type: "error",
+        theme: "dark",
+      });
     }
-    await signClient.core.pairing.disconnect({topic: pairing.topic});
-    // await signClient.disconnect({
-    //   topic: pairing.topic,
-    //   reason: {
-    //     code: 1,
-    //     message: reasonMessage || "Default Message",
-    //     data: reasonData || "Default Data",
-    //   },
-    // });
-    console.log("localStorage", localStorage);
-    refreshPairings(signClient);
-    return true;
   };
 
   const disconnectAllPairings = async (signClient: Client, reasonMessage?: string, reasonData?: string) => {
     console.log("Disconnecting all, ", signClient, reasonMessage);
-    return Promise.all(
-      signClient.pairing.getAll().map(async (pairing) => {
-        // Not sure which of these work.
-        // ToDo: Test them both and see which works and implement in disconnectPairing
-        //
-        // return signClient.core.pairing.disconnect({topic: pairing.topic});
-        return signClient.disconnect({
-          topic: pairing.topic,
-          reason: {
-            code: 1,
-            message: reasonMessage || "Default Message",
-            data: reasonData || "Default Data",
-          },
-        });
-      })
-    );
+    try {
+      return Promise.all(
+        signClient.pairing.getAll().map(async (pairing) => {
+          // Not sure which of these work.
+          // ToDo: Test them both and see which works and implement in disconnectPairing
+          //
+          // return signClient.core.pairing.disconnect({topic: pairing.topic});
+          return signClient.disconnect({
+            topic: pairing.topic,
+            reason: {
+              code: 1,
+              message: reasonMessage || "Default Message",
+              data: reasonData || "Default Data",
+            },
+          });
+        })
+      );
+    } catch (err: any) {
+      console.error(err);
+      const readableError = err?.message || JSON.stringify(err);
+      toast(`Error: ${readableError}`, {
+        position: "bottom-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+        type: "error",
+        theme: "dark",
+      });
+    }
   };
 
   const addressChanged = (newAddress: string) => {
