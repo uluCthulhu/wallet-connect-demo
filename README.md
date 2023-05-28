@@ -1,5 +1,5 @@
 # Demo
-[Demo here](https://000bp2n45m4m30gucdqdpn5mbea2itr9im93auun9e9ptiu81g560f0.web3portal.com/)
+[Demo here](https://demo.zenon.community/)
 
 # How to install WalletConnect in your project
 

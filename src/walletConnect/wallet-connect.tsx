@@ -10,6 +10,8 @@ import {toast} from "react-toastify";
 import closeIcon from "./../icons/close.svg";
 import refreshIcon from "./../icons/refresh.svg";
 import backIcon from "./../icons/back.svg";
+import {isMobileBrowser} from "../utils";
+import logoIcon from "./../icons/logo.png";
 
 function WalletConnect() {
   const projectId = "aab32a91d28dac99f7d99a9f1a4d8827";
@@ -32,19 +34,28 @@ function WalletConnect() {
 
   const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-  const openInNewTab = (url: string): void => {
-    // VULNERABILITY ALERT !
-    //
-    // Opening in new tab using just 'target='_blank' is a vulnerability
-    // Fix it by doing this
-    // https://www.jitbit.com/alexblog/256-targetblank---the-most-underestimated-vulnerability-ever/
-    //
+  const openSafelyInNewTab = (url: string) => {
+    const newWindow = window.open(url, "_blank", "noopener,noreferrer");
+    if (newWindow) newWindow.opener = null;
+  };
 
-    // const newWindow = window.open(url, "_blank", "noopener,noreferrer");
-    // if (newWindow) newWindow.opener = null;
+  const openSyrius = (uri?: string): void => {
+    // Only open on desktop devices
+    if (!isMobileBrowser()) {
+      const base = "syrius://";
+      const url = base + uri;
 
-    // For this purpose we don't even need target _blank so we just use the default redirect
-    window.open(url, "noopener,noreferrer");
+      // VULNERABILITY ALERT !
+      //
+      // Opening in new tab using just 'target='_blank' is a vulnerability
+      // Fix it by doing this
+      // https://www.jitbit.com/alexblog/256-targetblank---the-most-underestimated-vulnerability-ever/
+      //
+      // openSafelyInNewTab(url);
+
+      // For this purpose we don't even need target _blank so we just use the default redirect
+      window.open(url, "noopener,noreferrer");
+    }
   };
 
   const [signClientInstance, setSignClientInstance] = useState<Client | undefined>();
@@ -112,7 +123,17 @@ function WalletConnect() {
   }, [currentPairing, currentSession, signClientInstance, sessions, pairings]);
 
   const init = async () => {
-    const signClient = await SignClient.init({projectId: projectId});
+    console.log("logoIcon", logoIcon);
+
+    const signClient = await SignClient.init({
+      projectId: projectId,
+      metadata: {
+        name: document.title,
+        description: (document.querySelector('meta[name="description"]') as any)?.content,
+        url: window.location.host,
+        icons: [window.location.origin + logoIcon],
+      },
+    });
     return signClient;
   };
 
@@ -133,6 +154,7 @@ function WalletConnect() {
       projectId,
       standaloneChains: ["zenon:3"],
       themeVariables: themeVariables,
+      themeMode: "light",
       mobileWallets: [],
       desktopWallets: [],
       explorerRecommendedWalletIds: "NONE",
@@ -160,7 +182,7 @@ function WalletConnect() {
         //  Old Pairing, New Session
         //
         console.log("[CONNECTED] Creating new session on pairing", latestPairing);
-        openInNewTab("syrius://");
+        openSyrius();
         await signClient.connect({
           pairingTopic: latestPairing.topic,
           requiredNamespaces: zenonNamespace,
@@ -183,7 +205,7 @@ function WalletConnect() {
       if (uri) {
         try {
           await web3Modal.openModal({uri});
-          openInNewTab("syrius://" + uri);
+          openSyrius(uri);
           //
           // await approval() opens the confirmation dialog on the SyriusWallet desktop app
           //
@@ -249,7 +271,7 @@ function WalletConnect() {
       //
       // Opening the wallet app again is optional.
       //
-      openInNewTab("syrius://");
+      openSyrius();
       type getInfoType = {
         address: string;
         chainId: number;
@@ -290,7 +312,7 @@ function WalletConnect() {
       //
       // Opening the wallet app again is optional.
       //
-      openInNewTab("syrius://");
+      openSyrius();
       const signature = await signClient.request({
         topic: session.topic,
         chainId: "zenon:3",
@@ -325,7 +347,7 @@ function WalletConnect() {
       //
       // Opening the wallet app again is optional.
       //
-      openInNewTab("syrius://");
+      openSyrius();
       const result = await signClient.request({
         topic: session.topic,
         chainId: "zenon:3",
