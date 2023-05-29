@@ -12,6 +12,8 @@ import refreshIcon from "./../icons/refresh.svg";
 import backIcon from "./../icons/back.svg";
 import {isMobileBrowser} from "../utils";
 import logoIcon from "./../icons/logo.png";
+import syriusLogo from "./../icons/syrius-logo-padded.svg";
+import {MobileWallet} from "@web3modal/core";
 
 function WalletConnect() {
   const projectId = "aab32a91d28dac99f7d99a9f1a4d8827";
@@ -30,6 +32,29 @@ function WalletConnect() {
     "--w3m-button-border-radius	": "8px",
     "--w3m-wallet-icon-border-radius": "8px",
     "--w3m-secondary-button-border-radius": "8px",
+  };
+  const mobileWallets: MobileWallet[] | undefined = [
+    {
+      id: "syrius",
+      name: "Syrius desktop",
+      links: {
+        native: "syrius:",
+        universal: "syrius:",
+      },
+    },
+  ];
+  const desktopWallets: any = [
+    {
+      id: "syrius",
+      name: "Syrius desktop",
+      links: {
+        native: "syrius:",
+        universal: "syrius:",
+      },
+    },
+  ];
+  const walletImages = {
+    syrius: syriusLogo,
   };
 
   const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
@@ -54,7 +79,7 @@ function WalletConnect() {
       // openSafelyInNewTab(url);
 
       // For this purpose we don't even need target _blank so we just use the default redirect
-      window.open(url, "noopener,noreferrer");
+      // window.open(url, "noopener,noreferrer");
     }
   };
 
@@ -155,8 +180,9 @@ function WalletConnect() {
       standaloneChains: ["zenon:3"],
       themeVariables: themeVariables,
       themeMode: "light",
-      mobileWallets: [],
-      desktopWallets: [],
+      mobileWallets: mobileWallets,
+      walletImages: walletImages,
+      desktopWallets: desktopWallets,
       explorerRecommendedWalletIds: "NONE",
       enableExplorer: false,
     });
