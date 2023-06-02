@@ -541,6 +541,8 @@ function WalletConnect() {
 
     signClient.core.on("disconnect", (args: any) => {
       console.log(".on disconnect", args);
+      // Sometimes the event arrives before the session deletion is propagated to the localstorage
+      delay(5000);
       refreshSessionsAndPairings(signClient);
     });
 
@@ -578,6 +580,8 @@ function WalletConnect() {
 
     signClient.on("session_delete", (args) => {
       console.log(".on session_delete", args);
+      // Sometimes the event arrives before the session deletion is propagated to the localstorage
+      delay(5000);
       refreshSessions(signClient);
     });
 
@@ -633,7 +637,7 @@ function WalletConnect() {
       // This is optional but most likely you will need the wallet info at this point
       // You can (also) do this at another time in the flow
       //
-      getInfo(signClient, res.session);
+      sendGetInfo(signClient, res.session);
 
       console.log("res", res);
     } catch (err: any) {
@@ -723,6 +727,10 @@ function WalletConnect() {
         // Having 8 decimals, this means 1.1 ZNN
         ethers.BigNumber.from("110000000")
       );
+
+      if (chainId && parseFloat(chainId.toString())) {
+        dummyAccountBlock.chainIdentifier = parseFloat(chainId.toString());
+      }
 
       const dummyTransaction = {
         fromAddress: connectedAddress,
@@ -878,7 +886,7 @@ function WalletConnect() {
           </div>
         </div>
       ) : !isLoading ? (
-        <div style={{marginTop: "1rem"}}>Wallet not connected</div>
+        <div style={{marginTop: "1rem"}}>Connection not initialized</div>
       ) : (
         <></>
       )}
