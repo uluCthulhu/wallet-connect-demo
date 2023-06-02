@@ -329,6 +329,7 @@ function WalletConnect() {
         type: "error",
         theme: "dark",
       });
+      throw err;
     }
   };
 
@@ -364,6 +365,7 @@ function WalletConnect() {
         type: "error",
         theme: "dark",
       });
+      throw err;
     }
   };
 
@@ -404,6 +406,7 @@ function WalletConnect() {
         type: "error",
         theme: "dark",
       });
+      throw err;
     }
   };
 
@@ -637,7 +640,12 @@ function WalletConnect() {
       // This is optional but most likely you will need the wallet info at this point
       // You can (also) do this at another time in the flow
       //
-      sendGetInfo(signClient, res.session);
+      const result = await getInfo(signClient, res.session);
+      console.log("sendGetInfo result", result);
+
+      setNodeUrl(result?.nodeUrl || "");
+      setConnectedAddress(result?.address || "");
+      setChainId(result?.chainId);
 
       console.log("res", res);
     } catch (err: any) {
@@ -659,12 +667,27 @@ function WalletConnect() {
   };
 
   const sendGetInfo = async (signClient: Client, session: SessionTypes.Struct) => {
-    const result = await getInfo(signClient, session);
-    console.log("sendGetInfo result", result);
+    try {
+      const result = await getInfo(signClient, session);
+      console.log("sendGetInfo result", result);
 
-    setNodeUrl(result?.nodeUrl || "");
-    setConnectedAddress(result?.address || "");
-    setChainId(result?.chainId);
+      setNodeUrl(result?.nodeUrl || "");
+      setConnectedAddress(result?.address || "");
+      setChainId(result?.chainId);
+    } catch (err: any) {
+      console.error(err);
+      const readableError = err?.message || JSON.stringify(err);
+      toast(`Error: ${readableError}`, {
+        position: "bottom-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+        type: "error",
+        theme: "dark",
+      });
+    }
   };
 
   const sendDummyTransaction = async (signClient: Client, session: SessionTypes.Struct) => {
@@ -673,12 +696,21 @@ function WalletConnect() {
       // This is the same address as the connected one
       // This creates a send transaction between same address
       //
+      if (!connectedAddress) {
+        throw "You must get wallet info first!";
+      }
       const dummyAccountBlock = Primitives.AccountBlockTemplate.send(
         Primitives.Address.parse(connectedAddress),
         Constants.znnZts,
         // Having 8 decimals, this means 1 ZNN
         ethers.BigNumber.from("100000000")
       );
+
+      console.log("chainId", chainId);
+      if (chainId && parseFloat(chainId.toString())) {
+        dummyAccountBlock.chainIdentifier = parseFloat(chainId.toString());
+        console.log("dummyAccountBlock", dummyAccountBlock);
+      }
 
       const dummyTransaction = {
         fromAddress: connectedAddress,
@@ -721,6 +753,10 @@ function WalletConnect() {
       // This is the same address as the connected one
       // This creates a send transaction between same address
       //
+      if (!connectedAddress) {
+        throw "You must get wallet info first!";
+      }
+
       const dummyAccountBlock = Primitives.AccountBlockTemplate.send(
         Primitives.Address.parse(connectedAddress),
         Constants.znnZts,
@@ -728,8 +764,10 @@ function WalletConnect() {
         ethers.BigNumber.from("110000000")
       );
 
+      console.log("chainId", chainId);
       if (chainId && parseFloat(chainId.toString())) {
         dummyAccountBlock.chainIdentifier = parseFloat(chainId.toString());
+        console.log("dummyAccountBlock", dummyAccountBlock);
       }
 
       const dummyTransaction = {
