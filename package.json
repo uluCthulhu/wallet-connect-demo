@@ -10,7 +10,7 @@
     "@types/node": "^16.18.31",
     "@types/react": "^18.2.6",
     "@types/react-dom": "^18.2.4",
-    "@walletconnect/sign-client": "^2.7.5",
+    "@walletconnect/sign-client": "^2.7.7",
     "@walletconnect/types": "^2.7.7",
     "@web3modal/standalone": "^2.4.2",
     "ethers": "^6.4.0",

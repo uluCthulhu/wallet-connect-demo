@@ -20,7 +20,7 @@ function WalletConnect() {
   const zenonNamespace = {
     zenon: {
       id: "zenon",
-      chains: ["zenon:3"],
+      chains: ["zenon:1"],
       methods: ["znn_sign", "znn_info", "znn_send"],
       events: ["chainIdChange", "addressChange"],
     },
@@ -168,7 +168,7 @@ function WalletConnect() {
     // const web3Modal = new Web3Modal({
     //   walletConnectVersion: 2,
     //   projectId,
-    //   standaloneChains: ["zenon:3"],
+    //   standaloneChains: ["zenon:1"],
     // });
 
     // Customized modal
@@ -177,7 +177,7 @@ function WalletConnect() {
     const web3Modal: any = new Web3Modal({
       walletConnectVersion: 2,
       projectId,
-      standaloneChains: ["zenon:3"],
+      standaloneChains: ["zenon:1"],
       themeVariables: themeVariables,
       themeMode: "light",
       mobileWallets: mobileWallets,
@@ -306,7 +306,7 @@ function WalletConnect() {
 
       const result: getInfoType = await signClient.request({
         topic: session.topic,
-        chainId: "zenon:3",
+        chainId: "zenon:1",
         request: {
           method: "znn_info",
           params: undefined,
@@ -342,7 +342,7 @@ function WalletConnect() {
       openSyrius();
       const signature = await signClient.request({
         topic: session.topic,
-        chainId: "zenon:3",
+        chainId: "zenon:1",
         request: {
           method: "znn_sign",
           params: JSON.stringify(params.accountBlock),
@@ -378,7 +378,7 @@ function WalletConnect() {
       openSyrius();
       const result = await signClient.request({
         topic: session.topic,
-        chainId: "zenon:3",
+        chainId: "zenon:1",
         request: {
           method: "znn_send",
           params: {
