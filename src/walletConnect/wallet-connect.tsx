@@ -208,7 +208,7 @@ function WalletConnect() {
         //  Old Pairing, New Session
         //
         console.log("[CONNECTED] Creating new session on pairing", latestPairing);
-        openSyrius();
+        // openSyrius();
         await signClient.connect({
           pairingTopic: latestPairing.topic,
           requiredNamespaces: zenonNamespace,
@@ -231,7 +231,7 @@ function WalletConnect() {
       if (uri) {
         try {
           await web3Modal.openModal({uri});
-          openSyrius(uri);
+          // openSyrius(uri);
           //
           // await approval() opens the confirmation dialog on the SyriusWallet desktop app
           //
@@ -293,11 +293,11 @@ function WalletConnect() {
 
   const getInfo = async (signClient: Client, session: SessionTypes.Struct) => {
     try {
-      console.log("getInfo", signClient, session);
+      console.log("getInfo, signClient, session", signClient, session);
       //
       // Opening the wallet app again is optional.
       //
-      openSyrius();
+      // openSyrius();
       type getInfoType = {
         address: string;
         chainId: number;
@@ -339,7 +339,7 @@ function WalletConnect() {
       //
       // Opening the wallet app again is optional.
       //
-      openSyrius();
+      // openSyrius();
       const signature = await signClient.request({
         topic: session.topic,
         chainId: "zenon:1",
@@ -375,7 +375,7 @@ function WalletConnect() {
       //
       // Opening the wallet app again is optional.
       //
-      openSyrius();
+      // openSyrius();
       const result = await signClient.request({
         topic: session.topic,
         chainId: "zenon:1",

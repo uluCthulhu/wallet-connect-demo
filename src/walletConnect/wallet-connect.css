@@ -90,6 +90,7 @@
   align-items: center;
   margin-bottom: 8px;
   gap: 1rem;
+  word-break: break-word;
 }
 
 .active-item {
