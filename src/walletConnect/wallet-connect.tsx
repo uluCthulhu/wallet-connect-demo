@@ -1,8 +1,11 @@
-import {Web3Modal} from "@web3modal/standalone";
-import Client, {SignClient} from "@walletconnect/sign-client";
 import React, {useEffect, useState} from "react";
-import "./wallet-connect.css";
+import {WalletConnectModal} from "@walletconnect/modal";
+import {Core} from "@walletconnect/core";
+import Client, {SignClient} from "@walletconnect/sign-client";
+
 import {PairingTypes, SessionTypes} from "@walletconnect/types";
+import {MobileWallet} from "@walletconnect/modal-core";
+import "./wallet-connect.css";
 import {Constants, Primitives} from "znn-ts-sdk";
 import {ethers} from "ethers-ts";
 import {Link} from "react-router-dom";
@@ -13,7 +16,6 @@ import backIcon from "./../icons/back.svg";
 import {isMobileBrowser} from "../utils";
 import logoIcon from "./../icons/logo.png";
 import syriusLogo from "./../icons/syrius-logo-padded.svg";
-import {MobileWallet} from "@web3modal/core";
 
 function WalletConnect() {
   const projectId = "aab32a91d28dac99f7d99a9f1a4d8827";
@@ -26,12 +28,12 @@ function WalletConnect() {
     },
   };
   const themeVariables = {
-    "--w3m-font-family": `-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif`,
-    "--w3m-background-color": "#26BA3F",
-    "--w3m-accent-color": "#67E646",
-    "--w3m-button-border-radius	": "8px",
-    "--w3m-wallet-icon-border-radius": "8px",
-    "--w3m-secondary-button-border-radius": "8px",
+    "--wcm-font-family": `-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif`,
+    "--wcm-background-color": "#26BA3F",
+    "--wcm-accent-color": "#67E646",
+    "--wcm-button-border-radius	": "8px",
+    "--wcm-wallet-icon-border-radius": "8px",
+    "--wcm-secondary-button-border-radius": "8px",
   };
   const mobileWallets: MobileWallet[] | undefined = [
     {
@@ -150,8 +152,12 @@ function WalletConnect() {
   const init = async () => {
     console.log("logoIcon", logoIcon);
 
-    const signClient = await SignClient.init({
+    const core = new Core({
       projectId: projectId,
+    });
+
+    const web3wallet = await SignClient.init({
+      core, // <- pass the shared `core` instance
       metadata: {
         name: document.title,
         description: (document.querySelector('meta[name="description"]') as any)?.content,
@@ -159,25 +165,27 @@ function WalletConnect() {
         icons: [window.location.origin + logoIcon],
       },
     });
-    return signClient;
+    return web3wallet;
+
+    // Old implementation
+    //
+    // const web3wallet = await Web3wallet.init({
+    //   projectId: projectId,
+    //   metadata: {
+    //     name: document.title,
+    //     description: (document.querySelector('meta[name="description"]') as any)?.content,
+    //     url: window.location.host,
+    //     icons: [window.location.origin + logoIcon],
+    //   },
+    // });
+    // return web3wallet;
   };
 
-  const connectAndGetPairingAndSession = async (signClient: Client) => {
-    // Classic default modal
-    //
-    // const web3Modal = new Web3Modal({
-    //   walletConnectVersion: 2,
-    //   projectId,
-    //   standaloneChains: ["zenon:1"],
-    // });
-
-    // Customized modal
-    //
-    //
-    const web3Modal: any = new Web3Modal({
-      walletConnectVersion: 2,
+  const connectAndGetPairingAndSession = async (web3wallet: Client) => {
+    const wcModal: any = new WalletConnectModal({
+      // walletConnectVersion: 2,
       projectId,
-      standaloneChains: ["zenon:1"],
+      chains: ["zenon:1"],
       themeVariables: themeVariables,
       themeMode: "light",
       mobileWallets: mobileWallets,
@@ -187,7 +195,7 @@ function WalletConnect() {
       enableExplorer: false,
     });
 
-    const latestPairing = getLatestActivePairing(signClient);
+    const latestPairing = getLatestActivePairing(web3wallet);
     //
     // First step is to find out if we are already paired with a Wallet
     //
@@ -196,7 +204,7 @@ function WalletConnect() {
       // If we are paired we search for an available session.
       // Sessions can expire and we need to make sure they are still available
       //
-      const latestSession = getLatestActiveSession(signClient);
+      const latestSession = getLatestActiveSession(web3wallet);
       if (latestSession) {
         //
         //  Old Pairing, Old Session
@@ -209,13 +217,13 @@ function WalletConnect() {
         //
         console.log("[CONNECTED] Creating new session on pairing", latestPairing);
         // openSyrius();
-        await signClient.connect({
+        await web3wallet.connect({
           pairingTopic: latestPairing.topic,
           requiredNamespaces: zenonNamespace,
         });
         // We usually got some errors if not adding the delay. Sessions were not updated as soon as the await finished
         await delay(5000);
-        const newSession = getLatestActiveSession(signClient);
+        const newSession = getLatestActiveSession(web3wallet);
         console.log("[CONNECTED] New session", newSession);
         return {session: newSession, pairing: latestPairing};
       }
@@ -224,26 +232,26 @@ function WalletConnect() {
       // New Pairing, New Pairing
       //
       console.log("[CONNECTED] Creating new pairing and session");
-      const {uri, approval} = await signClient.connect({
+      const {uri, approval} = await web3wallet.connect({
         requiredNamespaces: zenonNamespace,
       });
       console.log("Generated uri", uri);
       if (uri) {
         try {
-          await web3Modal.openModal({uri});
+          await wcModal.openModal({uri});
           // openSyrius(uri);
           //
           // await approval() opens the confirmation dialog on the SyriusWallet desktop app
           //
           const session = await approval();
           console.log("[CONNECTED] Session", session);
-          web3Modal.closeModal();
+          wcModal.closeModal();
           //
           // We usually got some errors if not adding the delay.
           // The new pairings was not in the list as soon as the await finished
           //
           await delay(5000);
-          const newPairing = getLatestActivePairing(signClient);
+          const newPairing = getLatestActivePairing(web3wallet);
           console.log("[CONNECTED] newPairing", newPairing);
           return {session: session, pairing: newPairing};
         } catch (err) {
@@ -256,8 +264,8 @@ function WalletConnect() {
     }
   };
 
-  const getLatestActivePairing = (signClient: Client) => {
-    const allPairings = signClient.pairing.getAll();
+  const getLatestActivePairing = (web3wallet: Client) => {
+    const allPairings = web3wallet.pairing.getAll();
     console.log("allPairings", allPairings);
 
     //
@@ -273,8 +281,8 @@ function WalletConnect() {
     return latestPairing;
   };
 
-  const getLatestActiveSession = (signClient: Client) => {
-    const filteredSessions = signClient.find({
+  const getLatestActiveSession = (web3wallet: Client) => {
+    const filteredSessions = web3wallet.find({
       requiredNamespaces: zenonNamespace,
     });
 
@@ -490,7 +498,7 @@ function WalletConnect() {
     console.log("Disconnecting all, ", signClient, reasonMessage);
     try {
       return Promise.all(
-        signClient.pairing.getAll().map(async (pairing) => {
+        signClient.pairing.getAll().map(async (pairing: any) => {
           // Not sure which of these work.
           // ToDo: Test them both and see which works and implement in disconnectPairing
           //
@@ -618,7 +626,7 @@ function WalletConnect() {
     });
 
     signClient.on("proposal_expire", (args: any) => {
-      // ToDo: Close and reopen the web3Modal here
+      // ToDo: Close and reopen the wcModal here
       console.log(".on proposal_expire", args);
     });
   };

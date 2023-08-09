@@ -6,15 +6,13 @@
 For react you could use this documentation. Comes with hooks (wagmi)
 But if you want to customize the chainID and available extensions you need the Standalone Client.
 
-`npm i @web3modal/standalone@latest`
+`npm i @walletconnect/modal@latest`
 
 `npm i @walletconnect/sign-client@latest`
 
 ## For typescript also run
 
 `npm i @walletconnect/types`
-
-`npm i @types/web3modal`
 
 In order to interact with Zenon SDK (znn.ts) you will also need ethers / ethers-ts
 `npm i ethers`

@@ -9,7 +9,7 @@ function HowTo() {
       <h5>
         {`For react you could use this `}
         <a
-          href="https://docs.walletconnect.com/2.0/web3modal/react/installation"
+          href="https://docs.walletconnect.com/2.0/web/web3modal/react/wagmi/installation"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -17,21 +17,32 @@ function HowTo() {
         </a>
         {` Comes with hooks (wagmi)`}
       </h5>
-      <h4>
-        {`But if you want to customize the chainID and available extensions you need the `}
+
+      <h5>
+        {`But if you want to customize the chainID and available extensions you need to use `}
+        <a href="https://www.npmjs.com/package/@walletconnect/sign-client" target="_blank" rel="noopener noreferrer">
+          SignClient.
+        </a>
+      </h5>
+
+      <h5>
+        {`Optional: You might want to upgrade to Web3Wallet since SignClient is the old implementation. However, I couldn't make it work.`}
         <a
-          href="https://docs.walletconnect.com/2.0/web3modal/advanced/standalone/sign/installation"
+          href="https://docs.walletconnect.com/2.0/web/web3wallet/upgrade-guide#migrate-from-sign-client-to-web3wallet"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Standalone Client.
+          Migration Guide.
         </a>
-      </h4>
-      <pre>npm i @web3modal/standalone@latest</pre>
+      </h5>
+
+      <pre>npm i @walletconnect/modal@latest</pre>
+      <pre>npm i @walletconnect/core@latest</pre>
       <pre>npm i @walletconnect/sign-client@latest</pre>
+
       <h5>For typescript also run</h5>
       <pre>npm i @walletconnect/types</pre>
-      <pre>npm i @types/web3modal</pre>
+
       <h5>In order to interact with Zenon SDK (znn.ts) you will also need ethers / ethers-ts</h5>
       <div style={{display: "flex", alignItems: "center", gap: "1rem"}}>
         <pre>npm i ethers</pre>
