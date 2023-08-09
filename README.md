@@ -8,6 +8,8 @@ But if you want to customize the chainID and available extensions you need the S
 
 `npm i @walletconnect/modal@latest`
 
+`npm i @walletconnect/core@latest`
+
 `npm i @walletconnect/sign-client@latest`
 
 ## For typescript also run
